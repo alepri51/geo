@@ -1,51 +1,11 @@
 const path = require('path');
 const crypto = require('crypto2');
 
-const { Classes } = require('template.api');
-const { API, SecuredAPI } = Classes({ Models: require('../models') });
+const { Base } = require('./base');
 
-class GEO extends SecuredAPI {
+class Auth extends Base {
     constructor(...args) {
         super(...args);
-    }
-
-    $getToken(method_name, ...args) {
-        let [params = {}] = args;
-        
-        if(params.token)
-            return params.token;
-
-        
-
-        if(!this.payload) {
-            this.payload = {
-                //role: 'none'
-            }
-        }
-
-        if(!params.token && !this.payload) {            
-            throw { code: 401, message: 'No access token.' };
-        }
-    }
-
-    $setToken(token) {
-        this.res.setHeader('access-token', token);
-    }
-
-    async $verifyToken(token) {
-        let payload = await super.$verifyToken(token);
-        
-        if(payload.token_error)
-            throw { code: 403, ...payload.token_error };
-
-        return payload;
-    }
-
-    async $executeAction(method_name, target, reciever, ...args) {
-        let response = await super.$executeAction(method_name, target, reciever, ...args);
-
-        typeof(response) === 'object' && (response = { ...response, _sign_: `${this.payload.class}: ${this.payload.name}`});
-        return response;
     }
 
     async avatar() {
@@ -76,7 +36,7 @@ class GEO extends SecuredAPI {
     }
 
     async delete({ email: address }) {
-        let email = await API.Models.Email.findOne({
+        let email = await Base.Models.Email.findOne({
             address,
             account: {
                 role: {
@@ -89,22 +49,22 @@ class GEO extends SecuredAPI {
         });
 
         if(email && email.account) {
-            let payload = API.formatPayload(email.account);
+            let payload = Base.formatPayload(email.account);
 
             let account_class = email.account.class;
 
-            let account = await API.Models[account_class].findOne({
+            let account = await Base.Models[account_class].findOne({
                 _id: email.account._id,
                 email: true,
                 wallet: true
             });
 
-            account = await API.Models[account_class].delete(account);
+            account = await Base.Models[account_class].delete(account);
 
             let self_delete = email.account._id === this.payload._id;
             if(self_delete) {
-                await API.clearCache(this.payload);
-                this.payload = await API.shadow(this.payload);
+                await Base.clearCache(this.payload);
+                this.payload = await Base.shadow(this.payload);
             }
             
             console.log(account);
@@ -112,8 +72,8 @@ class GEO extends SecuredAPI {
     }
 
     async signout() {
-        await API.clearCache(this.payload);
-        this.payload.class !== 'Shadow' && (this.payload = await API.shadow(this.payload));
+        await Base.clearCache(this.payload);
+        this.payload.class !== 'Shadow' && (this.payload = await Base.shadow(this.payload));
     }
 
     async signup() {
@@ -122,23 +82,23 @@ class GEO extends SecuredAPI {
         /* if(this.payload.class !== 'Shadow') 
             throw { code: 403, message: 'Cannot signup while singed in. Sign out and try again.'}; */
 
-        let shadow = await API.Models.Shadow.findOne({
+        let shadow = await Base.Models.Shadow.findOne({
             _id: this.payload._id,
             email: true
         });
 
         if(!shadow) {
-            this.payload = await API.shadow(this.payload);
+            this.payload = await Base.shadow(this.payload);
             await this.signup();
         }
 
         if(shadow) {
-            let role = await API.Models.Role.byName({ name: 'Users', service_name: process.env.SERVICE || 'DEFAULT' });
+            let role = await Base.Models.Role.byName({ name: 'Users', service_name: process.env.SERVICE || 'DEFAULT' });
     
             const new_keys = await crypto.createKeyPair();
             let { privateKey, publicKey } = new_keys;
 
-            let user = await API.Models.Shadow.transformTo(API.Models.User, {
+            let user = await Base.Models.Shadow.transformTo(Base.Models.User, {
                 ...shadow,
                 //hash:
                 avatar: '',
@@ -149,8 +109,8 @@ class GEO extends SecuredAPI {
                 }
             })
     
-            await API.clearCache(this.payload);
-            this.payload = API.formatPayload(user);
+            await Base.clearCache(this.payload);
+            this.payload = Base.formatPayload(user);
         }
         //else throw { code: 403, message: 'Cannot signup while singed in. Sign out and try again.'};
 
@@ -167,7 +127,7 @@ class GEO extends SecuredAPI {
         address = address || 'user@example.com';
         password = password || '123';
 
-        let email = await API.Models.Email.findOne({
+        let email = await Base.Models.Email.findOne({
             address,
             account: {
                 role: {
@@ -185,7 +145,7 @@ class GEO extends SecuredAPI {
 
             let shadow_id = this.payload.class === 'Shadow' && this.payload._id;
 
-            this.payload = API.formatPayload(email.account);
+            this.payload = Base.formatPayload(email.account);
             shadow_id && (this.payload.shadow_id = shadow_id);
         }
         else throw { code: 404, message: 'User not found.'};
@@ -193,5 +153,5 @@ class GEO extends SecuredAPI {
 }
 
 module.exports = {
-    GEO
+    Auth
 }
