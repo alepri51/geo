@@ -91,27 +91,23 @@ class Role extends Node {
             }
         });
 
-        if(!service) {
-            service = await Service.save({
+        service = service || {};
+
+        if(!service.roles) {
+            service = !service._id && await Service.save({
                 name: service_name
             });
 
-            let roles = await Role.save({
-                name: 'Anonymous',
-                service,
-                inherits: {
-                    name: 'Everyone',
-                    service
-                }
-            });
-    
             roles = await Role.save({
                 name: 'Administrators',
                 service,
                 inherits: {
                     name: 'Users',
                     service,
-                    inherits: roles.inherits
+                    inherits: {
+                        name: 'Everyone',
+                        service
+                    }
                 }
             });
 
@@ -454,4 +450,4 @@ class wallet2user extends Relation {
     }
 }
 
-module.exports = { Email, Role, Account, Shadow, User }
+module.exports = { Service, Email, Role, Account, Shadow, User }

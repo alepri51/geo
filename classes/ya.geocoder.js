@@ -28,6 +28,10 @@ class Geocoder extends Base {
  */
     static async query({ address, lat, lon, kind = 'house', count, skip, lang = 'ru_RU' }) {
 
+        let service = await Base.Models.Service.findOne({
+            name: process.env.SERVICE || 'DEFAULT'
+        });
+
         const capitalize = (string) => {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
@@ -98,7 +102,7 @@ class Geocoder extends Base {
 
             let { GeoObject: geo } = object;
             let { metaDataProperty: { GeocoderMetaData: { Address: { Components: components }}}} = geo;
-    
+
             if(!memo.length) {
                 memo = components;
             }
@@ -118,6 +122,19 @@ class Geocoder extends Base {
             }
 
             if(inx === arr.length - 1) {
+                let { metaDataProperty: { GeocoderMetaData: { AddressDetails }}} = geo;
+
+                AddressDetails = flatten(AddressDetails);
+
+                let [key, postalCode] = Object.entries(AddressDetails).find(([key, value]) => {
+                    return key.endsWith('PostalCodeNumber');
+                }) || [];
+
+                if(postalCode) {
+                    let last = memo[memo.length - 1];
+                    last.postalCode = postalCode;
+                }
+
                 let [lat, lon] = geo.Point.pos.split(/\s/);
         
                 memo.push({
@@ -138,8 +155,16 @@ class Geocoder extends Base {
             name: `Мир`
         });
 
-        let { nodes, relations, params, paths } = hierarchy.reduce((memo, component, level) => {
+        let postalCode = void 0;
+
+        let { nodes, relations, params, paths } = hierarchy.reduce((memo, component, level, arr) => {
     
+            if(level === 0 && service) {
+                let cql = `MATCH (service:Service {_id:'${service._id}'})\n`;
+
+                memo.nodes.push(cql);
+            }
+
             memo.paths.push(component.name);
 
             let cql = `MERGE (n${level}:Geo:${capitalize(component.kind)} {path: '${memo.paths.join(',')}'}) SET n${level} += $n${level}`;
@@ -147,12 +172,29 @@ class Geocoder extends Base {
             memo.nodes.push(cql);
             memo.params[`n${level}`] = component;
 
-            if(level > 0) {
-                cql = `MERGE (n${level - 1})<-[:in]-(n${level})`;
+            if(level === 0 && service) {
+                cql = `MERGE (n0)-[:in]->(service)`;
 
                 memo.relations.push(cql);
             }
 
+            if(level > 0) {
+                //cql = `MERGE (n${level - 1})<-[:in]-(n${level})`;
+                cql = level === arr.length - 1 ? `MERGE (n${level - 1})-[:has]->(n${level})` : `MERGE (n${level - 1})<-[:in]-(n${level})`;
+
+                memo.relations.push(cql);
+            }
+
+            if(component.postalCode) {
+                let node = `MERGE (code:Geo:\`Postal Code\` {name: '${component.postalCode}'})`;
+                memo.nodes.push(node);
+
+                let link = `MERGE (code)<-[:has]-(n${level})`;
+                memo.relations.push(link);
+
+                postalCode = component.postalCode;
+            }
+            
             return memo;
         }, { nodes: [], relations: [], params: {}, paths: []});
 
@@ -164,6 +206,8 @@ class Geocoder extends Base {
         let cql = `${nodes}\n${relations}`;
     
         let neo_result = await database.query({ query: cql, params });
+
+        postalCode && paths.push(postalCode);
 
         return paths.join(',');
 

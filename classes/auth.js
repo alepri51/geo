@@ -82,39 +82,35 @@ class Auth extends Base {
         /* if(this.payload.class !== 'Shadow') 
             throw { code: 403, message: 'Cannot signup while singed in. Sign out and try again.'}; */
 
-        let shadow = await Base.Models.Shadow.findOne({
-            _id: this.payload._id,
-            email: true
+        let user = await Base.randomUser();
+
+        user = {
+            avatar: user.picture.thumbnail, 
+            email: {
+                address: user.email
+            },
+            name: `${user.name.title}. ${user.name.first} ${user.name.last}`
+        }
+
+        let role = await Base.Models.Role.byName({ name: 'Users', service_name: process.env.SERVICE || 'DEFAULT' });
+
+        const new_keys = await crypto.createKeyPair();
+        let { privateKey, publicKey } = new_keys;
+
+        user = await Base.Models.User.save({
+            ...user,
+            role,
+            wallet: {
+                publicKey,
+                privateKey
+            }
         });
 
-        if(!shadow) {
-            this.payload = await Base.shadow(this.payload);
-            await this.signup();
-        }
+        this.payload = Base.formatPayload(user);
 
-        if(shadow) {
-            let role = await Base.Models.Role.byName({ name: 'Users', service_name: process.env.SERVICE || 'DEFAULT' });
-    
-            const new_keys = await crypto.createKeyPair();
-            let { privateKey, publicKey } = new_keys;
-
-            let user = await Base.Models.Shadow.transformTo(Base.Models.User, {
-                ...shadow,
-                //hash:
-                avatar: '',
-                role,
-                wallet: {
-                    publicKey,
-                    privateKey
-                }
-            })
-    
-            await Base.clearCache(this.payload);
-            this.payload = Base.formatPayload(user);
-        }
-        //else throw { code: 403, message: 'Cannot signup while singed in. Sign out and try again.'};
-
-        //return this.payload;
+        /* return {
+            account: this.payload
+        } */
     }
 
     async signin({ email: address, password }) {
