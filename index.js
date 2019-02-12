@@ -20,9 +20,9 @@ app.listen(process.env.PORT || 8000, function () {
     (async() => {
 
         for(let i = 1; i <= 100; i++) {
-            axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`)
+            /* axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`)
             .then(response => response && console.info(i, response.data))
-            .catch(err => console.error(i, err));
+            .catch(err => console.error(i, err)); */
             
             /* let response = await axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`).catch(err => console.error(i, err));
             response && console.info(i, response.data); */
