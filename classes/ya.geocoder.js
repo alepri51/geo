@@ -1,12 +1,12 @@
 const axios = require('axios');
-const database = require('template.api').Models.database;
+const database = require('../api').database;
 const flatten = require('flat');
 
-const { Base } = require('./base');
+const { Geo } = require('./base');
 
 /*  */
 
-class Geocoder extends Base {
+class Geocoder extends Geo {
     constructor(...args) {
         super(...args);
     }
@@ -29,7 +29,7 @@ class Geocoder extends Base {
     static async query({ address, lat, lon, kind = 'house', count, skip, lang = 'ru_RU' }) {
 
         let service = await Base.Models.Service.findOne({
-            name: process.env.SERVICE || 'DEFAULT'
+            name: process.env.SERVICE
         });
 
         const capitalize = (string) => {

@@ -5,13 +5,11 @@ require('dotenv').config({
 const express = require('express');
 const app = express();
 
-const { Router } = require('template.api');
+const { RouterInit } = require('./api');
 
-const Classes = require('./classes');
+const { Router } = RouterInit({ Classes: { ...require('./classes') }});
 
-const router = Router({ Classes });
-
-app.use('/api', router);
+app.use('/api', Router);
 
 app.listen(process.env.PORT || 8000, function () {
     console.log(`Example app listening on port ${process.env.PORT || 8000}!`);

@@ -4,6 +4,7 @@
 allow, Everyone, *, *, *, *
 allow, *, *, signup, *, *
 allow, *, *, signin, *, *
+allow, *, *, =initialize, *, *
 
 //deny, *, *, *, *, *, { code: 500, message: 'My own internal server error' }
 deny, Anonymous, *, =signout, *, *, { code: 405, message: 'Signout is not allowed for Anonymous users' }

@@ -1,10 +1,10 @@
 const path = require('path');
 const crypto = require('crypto2');
 
-const { Classes } = require('template.api');
-const { API, SecuredAPI } = Classes({ Models: require('../models') });
+const { Classes } = require('../api');
+const { API, SecuredAPI } = Classes;
 
-class Base extends SecuredAPI {
+class Geo extends SecuredAPI {
     constructor(...args) {
         super(...args);
     }
@@ -14,8 +14,6 @@ class Base extends SecuredAPI {
         
         if(params.token)
             return params.token;
-
-        
 
         if(!this.payload) {
             this.payload = {
@@ -49,10 +47,11 @@ class Base extends SecuredAPI {
     }
 
     async $refreshToken(method_name, ...args) {
-        return Object.keys(this.payload).length && await super.$refreshToken(method_name, ...args);
+        return this.payload && Object.keys(this.payload).length && await super.$refreshToken(method_name, ...args);
     }
+
 }
 
 module.exports = {
-    Base
+    Geo
 }
