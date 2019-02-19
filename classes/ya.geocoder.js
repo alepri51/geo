@@ -28,7 +28,7 @@ class Geocoder extends Geo {
  */
     static async query({ address, lat, lon, kind = 'house', count, skip, lang = 'ru_RU' }) {
 
-        let service = await Base.Models.Service.findOne({
+        let service = await Geocoder.Models.Service.findOne({
             name: process.env.SERVICE
         });
 
