@@ -22,7 +22,7 @@ class Playground extends Geo {
             query: {
                 name
             },
-            labels: [process.env.SERVICE1]
+            labels: [process.env.SERVICE]
         });
 
         if(!toy) {
@@ -30,7 +30,7 @@ class Playground extends Geo {
                 query: {
                     name
                 },
-                labels: [process.env.SERVICE1]
+                labels: [process.env.SERVICE]
             });
         }
 
