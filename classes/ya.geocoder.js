@@ -148,7 +148,7 @@ class Geocoder extends Geo {
             return memo;
         }, []);
 
-        console.log(hierarchy);
+        //console.log(hierarchy);
 
         hierarchy.unshift({
             kind: 'Мир',
