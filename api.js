@@ -11,4 +11,8 @@
     return { Router, Classes, Models };
 } */
 
-module.exports = { Router, Classes, Models, database } = require('neo.api')({ connection_string: process.env.NEO_URL, acl_model: './security/acl.model', acl_policy: './security/acl.policy' });
+const CustomModels = require('./models');
+
+let { RouterInit, Classes, Models, database } = require('neo.api')({ CustomModels, connection_string: process.env.NEO_URL, acl_model: './security/acl.model', acl_policy: './security/acl.policy' });
+
+module.exports = { RouterInit, Classes, Models, database };

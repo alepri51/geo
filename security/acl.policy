@@ -10,10 +10,16 @@ allow, *, *, =initialize, *, *
 deny, Anonymous, *, =signout, *, *, { code: 405, message: 'Signout is not allowed for Anonymous users' }
 deny, Users, *, signup, *, *, { code: 405, message: 'Signup is not allowed for signed users' }
 deny, Users, *, signin, *, *, { code: 405, message: 'Signin is not allowed for signed users' }
+
+deny, *, *, delete, *, *, { code: 405, message: 'Delete is not allowed for users' }
+allow, Administrators, *, delete, *, *
+
 deny, *, *, =isShadow, =Shadow, *, { code: 405, message: 'Signin is not allowed for Anonymous users' }
 
 deny, *, *, =isService, *, *, { code: 405, message: 'Not same service. You should signup.' }
 allow, *, *, =isService, $data.service, *
+
+allow, *, playground, *, *, *
 
 //allow, *, *, signout, { email: '$data.email' }, *
 

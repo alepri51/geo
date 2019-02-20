@@ -1,2 +1,5 @@
+const toy = require('./toy');
 
-module.exports = {}
+module.exports = {
+    ...toy
+};

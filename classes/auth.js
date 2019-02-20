@@ -37,36 +37,38 @@ class Auth extends Geo {
 
     async initialize({ email: address }) {
         let service = await Auth.Models.Service.findOne({
-            name: process.env.SERVICE,
-            roles: true
+            query: {
+                name: process.env.SERVICE,
+                roles: true
+            }
         });
 
         let email = await Auth.Models.Email.findOne({
-            address,
-            account: {
-                role: {
-                    service: {
-                        name: process.env.SERVICE
-                    }
-                },
-                email: true
+            query: {
+                address,
+                account: {
+                    role: {
+                        service: {
+                            name: process.env.SERVICE
+                        }
+                    },
+                    email: true
+                }
             }
         });
 
         if(email && email.account && email.account.role.name === 'Administrators') {
             if(this.payload._id === email.account._id) {
                 let users = await Auth.Models.User.delete({
-                    email: true,
-                    wallet: true,
-                    role: {
-                        service: {
-                            name: process.env.SERVICE
+                    query: {
+                        email: true,
+                        wallet: true,
+                        role: {
+                            service: {
+                                name: process.env.SERVICE
+                            }
                         }
-                    },
-                }); 
-
-                let accounts = await Auth.Models.Account.find({
-                    email: true
+                    }
                 }); 
 
                 console.log(account)
@@ -82,14 +84,16 @@ class Auth extends Geo {
 
     async delete({ email: address }) {
         let email = await Auth.Models.Email.findOne({
-            address,
-            account: {
-                role: {
-                    service: {
-                        name: process.env.SERVICE
-                    }
-                },
-                email: true
+            query: {
+                address,
+                account: {
+                    role: {
+                        service: {
+                            name: process.env.SERVICE
+                        }
+                    },
+                    email: true
+                }
             }
         });
 
@@ -99,12 +103,14 @@ class Auth extends Geo {
             let account_class = email.account.class;
 
             let account = await Auth.Models[account_class].findOne({
-                _id: email.account._id,
-                email: true,
-                wallet: true
+                query: {
+                    _id: email.account._id,
+                    email: true,
+                    wallet: true
+                }
             });
 
-            account = await Auth.Models[account_class].delete(account);
+            account = await Auth.Models[account_class].delete({ query: account });
 
             let self_delete = email.account._id === this.payload._id;
             if(self_delete) {
@@ -132,19 +138,23 @@ class Auth extends Geo {
 
 
         let user = await Auth.Models.User.findOne({
-            email: {
-                address
-            },
-            role: {
-                service: true
+            query: {
+                email: {
+                    address
+                },
+                role: {
+                    service: true
+                }
             }
         });
 
         if(user) {
             if(user.role.service.name !== role.service.name) {
                 user = await Auth.Models.User.save({
-                    ...user,
-                    role
+                    query: {
+                        ...user,
+                        role
+                    }
                 });
             }
             else throw { code: 409, message: 'User alresdy exists.'};
@@ -165,11 +175,13 @@ class Auth extends Geo {
             let { privateKey, publicKey } = new_keys;
     
             user = await Auth.Models.User.save({
-                ...user,
-                role,
-                wallet: {
-                    publicKey,
-                    privateKey
+                query: {
+                    ...user,
+                    role,
+                    wallet: {
+                        publicKey,
+                        privateKey
+                    }
                 }
             });
         }
@@ -193,14 +205,16 @@ class Auth extends Geo {
         password = password || '123';
 
         let email = await Auth.Models.Email.findOne({
-            address,
-            account: {
-                role: {
-                    service: {
-                        name: process.env.SERVICE
-                    }
-                },
-                email: true
+            query: {
+                address,
+                account: {
+                    role: {
+                        service: {
+                            name: process.env.SERVICE
+                        }
+                    },
+                    email: true
+                }
             }
         });
 

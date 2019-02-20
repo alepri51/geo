@@ -28,8 +28,10 @@ class Geocoder extends Geo {
  */
     static async query({ address, lat, lon, kind = 'house', count, skip, lang = 'ru_RU' }) {
 
-        let service = await Geocoder.Models.Service.findOne({
-            name: process.env.SERVICE
+        let service = await Geo.Models.Service.findOne({
+            query: {
+                name: process.env.SERVICE
+            }
         });
 
         const capitalize = (string) => {
@@ -151,7 +153,7 @@ class Geocoder extends Geo {
         //console.log(hierarchy);
 
         hierarchy.unshift({
-            kind: 'Мир',
+            kind: 'world',
             name: `Мир`
         });
 

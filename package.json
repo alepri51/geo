@@ -16,6 +16,7 @@
     "flat": "^4.1.0",
     "lru-cache": "^5.1.1",
     "nanoid": "^2.0.1",
-    "neo.api": "file:../neo.api"
+    "neo.api": "file:../neo.api",
+    "neo4orm": "file:../neo4orm"
   }
 }
