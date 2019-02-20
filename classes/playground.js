@@ -9,8 +9,7 @@ class Playground extends Geo {
     }
 
     async get(...args) {
-        return await Geo.Models.Toy.findOne({
-        })
+        return await Geo.Models.Toy.find()
     }
 
     async create(...args) {
@@ -43,6 +42,11 @@ class Playground extends Geo {
         return info;
     }
 
+    async deleteAllToys() {
+        let info = await Geo.Models.Toy.delete();
+
+        return info;
+    }
 
 }
 
