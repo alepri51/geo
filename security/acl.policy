@@ -19,7 +19,7 @@ deny, *, *, =isShadow, =Shadow, *, { code: 405, message: 'Signin is not allowed 
 deny, *, *, =isService, *, *, { code: 405, message: 'Not same service. You should signup.' }
 allow, *, *, =isService, $data.service, *
 
-allow, *, playground, *, *, *
+allow, Users, playground, *, *, *
 
 //allow, *, *, signout, { email: '$data.email' }, *
 

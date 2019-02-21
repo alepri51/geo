@@ -9,7 +9,7 @@ class Playground extends Geo {
     }
 
     async get(...args) {
-        return await Geo.Models.Toy.find()
+        return await Geo.Models.Toy.find({ labels: [process.env.SERVICE, `Owner:${this.payload._id}`] })
     }
 
     async create(...args) {
@@ -21,7 +21,7 @@ class Playground extends Geo {
             query: {
                 name
             },
-            labels: [process.env.SERVICE]
+            labels: [process.env.SERVICE, `Owner:${this.payload._id}`]
         });
 
         if(!toy) {
@@ -29,7 +29,7 @@ class Playground extends Geo {
                 query: {
                     name
                 },
-                labels: [process.env.SERVICE]
+                labels: [process.env.SERVICE, `Owner:${this.payload._id}`]
             });
         }
 
@@ -37,13 +37,13 @@ class Playground extends Geo {
     }
 
     async delete({ name }) {
-        let info = await Geo.Models.Toy.delete({ query: { name }});
+        let info = await Geo.Models.Toy.delete({ query: { name }, labels: [process.env.SERVICE, `Owner:${this.payload._id}`] });
 
         return info;
     }
 
     async deleteAllToys() {
-        let info = await Geo.Models.Toy.delete();
+        let info = await Geo.Models.Toy.delete({ labels: [process.env.SERVICE, `Owner:${this.payload._id}`] });
 
         return info;
     }
