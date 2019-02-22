@@ -68,10 +68,11 @@ class Auth extends Geo {
                                 name: process.env.SERVICE
                             }
                         }
-                    }
+                    },
+                    //labels: [process.env.SERVICE]
                 }); 
 
-                console.log(account)
+                //console.log(account)
             }
             else throw { code: 403, message: 'Restricted for non Administrators.'};
         }
@@ -90,8 +91,10 @@ class Auth extends Geo {
                     role: {
                         service: {
                             name: process.env.SERVICE
-                        }
+                        },
+                        limit: true
                     },
+                    
                     email: true
                 }
             }
