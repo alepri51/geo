@@ -36,13 +36,6 @@ class Auth extends Geo {
     }
 
     async initialize({ email: address }) {
-        let service = await Auth.Models.Service.findOne({
-            query: {
-                name: process.env.SERVICE,
-                roles: true
-            }
-        });
-
         let email = await Auth.Models.Email.findOne({
             query: {
                 address,
@@ -59,27 +52,47 @@ class Auth extends Geo {
 
         if(email && email.account && email.account.role.name === 'Administrators') {
             if(this.payload._id === email.account._id) {
-                let users = await Auth.Models.User.delete({
+                let users = await Auth.Models.Service.find({
+                    query: {
+                        _id: email.account.role.service._id,
+                        roles: {
+                            accounts: {
+                                class: Auth.Models.User,
+                                email: true,
+                                wallet: true
+                            },
+                            limit: true
+                        }
+                    }
+                });
+
+                /* users = await Auth.Models.Node.delete({
+                    labels: [process.env.SERVICE]
+                }); */
+                /* let users = await Auth.Models.User.delete({
                     query: {
                         email: true,
                         wallet: true,
                         role: {
                             service: {
-                                name: process.env.SERVICE
-                            }
+                                name: process.env.SERVICE,
+                                roles: {
+                                    limit
+                                }
+                            },
+                            limit: true
                         }
                     },
-                    //labels: [process.env.SERVICE]
-                }); 
+                }); */
 
-                //console.log(account)
+                console.log(users)
             }
             else throw { code: 403, message: 'Restricted for non Administrators.'};
         }
         else {
             console.log('exisits') //create admin here
             let role = await Auth.Models.Role.byName({ name: 'Administrators', service_name: process.env.SERVICE });
-            await this.signup({ email: address, role });
+            await this.signup({ email: address }, role);
         }
     }
 
@@ -132,7 +145,7 @@ class Auth extends Geo {
         this.payload.class !== 'Shadow' && (this.payload = await Auth.shadow(this.payload));
     }
 
-    async signup({ email: address, role } = {}) {
+    async signup({ email: address } = {}, role) {
         //await this.isNotShadow(this.payload.class);
 
         /* if(this.payload.class !== 'Shadow') 
@@ -140,13 +153,15 @@ class Auth extends Geo {
         role = role || await Auth.Models.Role.byName({ name: 'Users', service_name: process.env.SERVICE });
 
 
-        let user = await Auth.Models.User.findOne({
+        let user = address && await Auth.Models.User.findOne({
             query: {
                 email: {
                     address
                 },
                 role: {
-                    service: true
+                    service: {
+                        name: process.env.SERVICE
+                    }
                 }
             }
         });
@@ -156,6 +171,7 @@ class Auth extends Geo {
                 user = await Auth.Models.User.save({
                     query: {
                         ...user,
+                        _id: Auth.Models.User.id,
                         role
                     }
                 });
@@ -168,6 +184,7 @@ class Auth extends Geo {
             user = {
                 avatar: user.picture.thumbnail, 
                 email: {
+                    _id: Auth.Models.User.id,
                     address: address || user.email
                 },
                 name: `${user.name.title}. ${user.name.first} ${user.name.last}`

@@ -169,7 +169,7 @@ class Geocoder extends Geo {
 
             memo.paths.push(component.name);
 
-            let cql = `MERGE (n${level}:Geo:${capitalize(component.kind)} {path: '${memo.paths.join(',')}'}) SET n${level} += $n${level}`;
+            let cql = `MERGE (n${level}:${service.name}:${capitalize(component.kind)} {path: '${memo.paths.join(',')}'}) SET n${level} += $n${level}`;
 
             memo.nodes.push(cql);
             memo.params[`n${level}`] = component;
@@ -188,7 +188,7 @@ class Geocoder extends Geo {
             }
 
             if(component.postalCode) {
-                let node = `MERGE (code:Geo:\`Postal Code\` {name: '${component.postalCode}'})`;
+                let node = `MERGE (code:${service.name}:\`Postal Code\` {name: '${component.postalCode}'})`;
                 memo.nodes.push(node);
 
                 let link = `MERGE (code)<-[:has]-(n${level})`;
