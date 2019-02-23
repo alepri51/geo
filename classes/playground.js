@@ -8,6 +8,19 @@ class Playground extends Geo {
         super(...args);
     }
 
+    async hello(...args) {
+        let admins = await Geo.Models.Service.find({
+            query: {
+                //_id: 'asda',
+                //_id: { $in: ['231', '123'] },
+                name: { $pattern: 'NOT ($ IN $)' }
+                //name: { $ne: process.env.SERVICE }
+            }
+        });
+
+        return admins;
+    }
+
     async get(...args) {
         return await Geo.Models.Toy.find({ labels: [process.env.SERVICE, `Owner:${this.payload._id}`] })
     }
