@@ -11,6 +11,13 @@ class Playground extends Geo {
     async hello(...args) {
         let admins = await Geo.Models.Service.find({
             query: {
+                roles: {
+                    _id: { 'NOT ()-[]-()': ''}
+                }
+            }
+        })
+        /* let admins = await Geo.Models.Service.find({
+            query: {
                 //_id: 'asda',
                 //_id: { $in: ['231', '123'] },
                 name: { $notIn: ['GEO1', 'GEO2'] },
@@ -18,7 +25,7 @@ class Playground extends Geo {
                 //name: { $ne: process.env.SERVICE }
                 //name: 'GEO'
             }
-        });
+        }); */
 
         return admins;
     }
