@@ -11,11 +11,56 @@ class Playground extends Geo {
     async hello(...args) {
         let admins = await Geo.Models.Service.find({
             query: {
+                name: process.env.SERVICE,
                 roles: {
-                    _id: { 'NOT ()-[]-()': ''}
+                    accounts: {
+                        roles: {
+                            service: {
+                                //$aggregate: 'count:$'
+                            }
+                        }
+                    }
                 }
             }
-        })
+        });
+
+        /* let admins = await Geo.Models.Account.find({
+            query: {
+                roles: {
+                    //name: 'Users',
+                    service: { 
+                        $aggregate: 'count:$',
+                        _id: { '$ref = toInteger($val) AND $ref.name = "GEO"': 1 }
+                    },
+
+                },
+                'roles:1': {
+                    //name: 'Users',
+                    service: { 
+                        $aggregate: 'count:$',
+                        _id: { '$ref = toInteger($val) AND $ref.name <> "GEO"': 1 }
+                    }
+                }
+            }
+        }) */
+        /* let admins = await Geo.Models.Account.find({
+            query: {
+                roles: {
+                    //name: 'Users',
+                    service: { 
+                        $aggregate: 'count:$',
+                        _id: { '$ref = toInteger($val) AND $ref.name = "GEO"': 1 }
+                    }
+                },
+                'roles:1': {
+                    //name: 'Users',
+                    service: { 
+                        $aggregate: 'count:$',
+                        _id: { '$ref = toInteger($val) AND $ref.name <> "GEO"': 1 }
+                    }
+                }
+            }
+        }) */
         /* let admins = await Geo.Models.Service.find({
             query: {
                 //_id: 'asda',
