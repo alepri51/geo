@@ -13,8 +13,10 @@ class Playground extends Geo {
             query: {
                 //_id: 'asda',
                 //_id: { $in: ['231', '123'] },
-                name: { $pattern: 'NOT ($ IN $)' }
+                name: { $notIn: ['GEO1', 'GEO2'] },
+                //name: { 'NOT ($prop IN $val)': ['GEO1', 'GEO2'] },
                 //name: { $ne: process.env.SERVICE }
+                //name: 'GEO'
             }
         });
 

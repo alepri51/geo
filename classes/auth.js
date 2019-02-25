@@ -31,8 +31,8 @@ class Auth extends Geo {
 
     }
 
-    async initialize({ email: address, password }) {
-        let admins = await Auth.Models.User.findOne({
+    async initialize({ email: address, password } = {}) {
+        let admins = await Auth.Models.User.find({
             query: {
                 roles: {
                     name: 'Administrators',
@@ -43,7 +43,7 @@ class Auth extends Geo {
             }
         });
 
-        if(admins) {
+        if(admins.length) {
             let email = await Auth.Models.Email.findOne({
                 query: {
                     address,
@@ -63,7 +63,7 @@ class Auth extends Geo {
             if(email) {
                 if(email.account.roles.some(role => role.name === 'Administrators' && role.service.name === process.env.SERVICE)) {
                     if(this.payload._id === email.account._id) {
-                        let delete_account = !email.account.roles.some(role => role.service.name !== process.env.SERVICE);
+                        let delete_account = !email.account.roles.every(role => role.service.name === process.env.SERVICE);
 
                         if(delete_account)
                         /* await Auth.Models.Service.delete({
