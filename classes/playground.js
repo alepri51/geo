@@ -9,7 +9,7 @@ class Playground extends Geo {
     }
 
     async hello(...args) {
-        let admins = await Geo.Models.Service.find({
+        /* let admins = await Geo.Models.Service.find({
             query: {
                 name: process.env.SERVICE,
                 roles: {
@@ -22,27 +22,25 @@ class Playground extends Geo {
                     }
                 }
             }
-        });
+        }); */
 
-        /* let admins = await Geo.Models.Account.find({
+        let admins = await Geo.Models.Account.find({
             query: {
                 roles: {
-                    //name: 'Users',
+                    $skip: true,
                     service: { 
                         $aggregate: 'count:$',
-                        _id: { '$ref = toInteger($val) AND $ref.name = "GEO"': 1 }
-                    },
-
+                        _id: { '$ref = toInteger($val)': 1 }
+                    }
                 },
                 'roles:1': {
-                    //name: 'Users',
                     service: { 
-                        $aggregate: 'count:$',
-                        _id: { '$ref = toInteger($val) AND $ref.name <> "GEO"': 1 }
-                    }
+                        name: process.env.SERVICE
+                    },
+                    limit: true
                 }
             }
-        }) */
+        })
         /* let admins = await Geo.Models.Account.find({
             query: {
                 roles: {
