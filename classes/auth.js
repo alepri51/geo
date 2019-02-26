@@ -43,10 +43,10 @@ class Auth extends Geo {
             }
         });
 
-        if(admins.length) {
+        if(admins && admins.length) {
             let email = await Auth.Models.Email.findOne({
                 query: {
-                    address,
+                    address: this.payload.email,
                     account: {
                         class: Auth.Models.User,
                         roles: {
@@ -63,17 +63,24 @@ class Auth extends Geo {
             if(email) {
                 if(email.account.roles.some(role => role.name === 'Administrators' && role.service.name === process.env.SERVICE)) {
                     if(this.payload._id === email.account._id) {
-                        let delete_account = !email.account.roles.every(role => role.service.name === process.env.SERVICE);
+                        const delete_cql = `
+                        MATCH (account:Account)-->(role:Role) WITH *
+                        MATCH (role)-->(service:Service) 
+                        WITH account, count(service) AS service WHERE service = 1
+                        WITH account
+                        MATCH (account)-->(role:Role)
+                        MATCH (role)-->(service:Service) WHERE service.name = $service
+                        WITH account, service
+                        MATCH (account)-->(wallet:Wallet)
+                        MATCH (account)-->(email:Email)
+                        MATCH (service)<--(role:Role)
+                        MATCH (role)-->(limit:\`Access Limit\`)
+                        DETACH DELETE account, service, wallet, email, role, limit
+                        `
 
-                        if(delete_account)
-                        /* await Auth.Models.Service.delete({
-                            _id: service._id,
-                            roles: {
-                                limit: true
-                            }
-                        }); */
+                        let res = await Auth.database.query({ query: delete_cql, params: { service: process.env.SERVICE }});
 
-                        console.log('admin')
+                        console.log('admin');
                     }
                     else throw { code: 403, message: 'Provide a valid token.'};
                 }
