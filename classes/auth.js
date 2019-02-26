@@ -63,60 +63,29 @@ class Auth extends Geo {
             if(email) {
                 if(email.account.roles.some(role => role.name === 'Administrators' && role.service.name === process.env.SERVICE)) {
                     if(this.payload._id === email.account._id) {
+
                         const delete_cql = `
-                        MATCH (account:Account)-->(role:Role) WITH *
-                        MATCH (role)-->(service:Service) 
-                        WITH account, count(service) AS service WHERE service = 1
-                        WITH account
-                        MATCH (account)-->(role:Role)
-                        MATCH (role)-->(service:Service) WHERE service.name = $service
-                        WITH account, service
-                        MATCH (account)-->(wallet:Wallet)
-                        MATCH (account)-->(email:Email)
-                        MATCH (service)<--(role:Role)
-                        MATCH (role)-->(limit:\`Access Limit\`)
-                        DETACH DELETE account, service, wallet, email, role, limit
+                            MATCH (service:Service) WHERE service.name = $service
+                            MATCH (service)<--(role:Role)
+                            MATCH (role)-->(limit:\`Access Limit\`)
+                            DETACH DELETE service, role, limit
+                            WITH {} AS void
+                            MATCH (account:Account) WHERE NOT (account)-->(:Role)
+                            MATCH (account)-->(wallet:Wallet)
+                            MATCH (account)-->(email:Email)
+                            DETACH DELETE account, wallet, email
                         `
 
-                        let res = await Auth.database.query({ query: delete_cql, params: { service: process.env.SERVICE }});
+                        let { counters: { _stats }} = await Auth.database.query({ query: delete_cql, params: { service: process.env.SERVICE }});
 
+                        return _stats;
+                        //await this.initialize({ email: this.payload.email });
                         console.log('admin');
                     }
                     else throw { code: 403, message: 'Provide a valid token.'};
                 }
                 else throw { code: 403, message: 'Access denied for non Administrators.'};
-                /* let users = await Auth.Models.Service.find({
-                    query: {
-                        _id: email.account.role.service._id,
-                        roles: {
-                            accounts: {
-                                class: Auth.Models.User,
-                                email: true,
-                                wallet: true
-                            },
-                            limit: true
-                        }
-                    }
-                }); */
-
-                /* users = await Auth.Models.Node.delete({
-                    labels: [process.env.SERVICE]
-                }); */
-                /* let users = await Auth.Models.User.delete({
-                    query: {
-                        email: true,
-                        wallet: true,
-                        role: {
-                            service: {
-                                name: process.env.SERVICE,
-                                roles: {
-                                    limit
-                                }
-                            },
-                            limit: true
-                        }
-                    },
-                }); */
+                
             }
             else throw { code: 404, message: 'User not found.'};
         }
@@ -128,47 +97,54 @@ class Auth extends Geo {
     }
 
     async delete({ email: address }) {
-        let email = await Auth.Models.Email.findOne({
+        if(!address)
+            throw { code: 405, message: 'Empty email is not allowed.' };
+
+        let user = await Auth.Models.Account.findOne({
             query: {
-                address,
-                account: {
-                    role: {
-                        service: {
-                            name: process.env.SERVICE
-                        },
-                        limit: true
-                    },
-                    
-                    email: true
+                email: {
+                    address
                 }
             }
         });
-
-        if(email && email.account) {
-            let payload = Auth.formatPayload(email.account);
-
-            let account_class = email.account.class;
-
-            let account = await Auth.Models[account_class].findOne({
+        
+        if(user) {
+            let service = await Auth.Models.Service.findOne({
                 query: {
-                    _id: email.account._id,
-                    email: true,
-                    wallet: true
+                    name: process.env.SERVICE,
+                    roles: {
+                        name: 'Administrators',
+                        accounts: {
+                            email: true
+                        }
+                    }
                 }
             });
 
-            account = await Auth.Models[account_class].delete({ query: account });
+            let [administrators] = service.roles;
 
-            let self_delete = email.account._id === this.payload._id;
-            if(self_delete) {
-                await Auth.clearCache(this.payload);
-                //this.payload = await Auth.shadow(this.payload);
-                this.payload = void 0;
-            }
-            
-            console.log(account);
+            if(administrators && administrators.accounts.length === 1 && administrators.accounts.every(account => account.email.address === address))
+                throw { code: 405, message: 'Not allowed to delete the last administrator.'};
+
+            const delete_cql = `
+                MATCH (service:Service) WHERE service.name = $service
+                MATCH (service)<--(role:Role)
+                MATCH (account:Account)-[rel:has]->(role)
+                MATCH (account)-->(email:Email) WHERE email.address = $address
+                DELETE rel
+                WITH NULL AS void
+                MATCH (account:Account) WHERE NOT (account)-->(:Role)
+                MATCH (account)-->(wallet:Wallet)
+                MATCH (account)-->(email:Email)
+                DETACH DELETE account, wallet, email
+            `
+
+            let { counters: { _stats }} = await Auth.database.query({ query: delete_cql, params: { service: process.env.SERVICE, address }});
+
+            return _stats;
         }
         else throw { code: 404, message: 'User not found.'};
+
     }
 
     async signout() {

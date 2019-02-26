@@ -13,7 +13,7 @@ deny, Users, *, signup, *, *, { code: 405, message: 'Signup is not allowed for s
 deny, Users, *, signin, *, *, { code: 405, message: 'Signin is not allowed for signed users' }
 
 deny, *, *, delete, *, *, { code: 405, message: 'Delete is not allowed for users' }
-allow, Administrators, *, delete, *, *
+allow, Administrators, *, delete, { service: '$data.service' }, *
 
 deny, *, *, =isShadow, =Shadow, *, { code: 405, message: 'Signin is not allowed for Anonymous users' }
 
