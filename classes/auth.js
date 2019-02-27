@@ -147,10 +147,10 @@ class Auth extends Geo {
 
     }
 
-    async signout() {
+    /* async signout() {
         await Auth.clearCache(this.payload);
         this.payload.class !== 'Shadow' && (this.payload = await Auth.shadow(this.payload));
-    }
+    } */
 
     async signup({ email: address } = {}, role) {
 
