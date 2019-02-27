@@ -3,6 +3,11 @@ const crypto = require('crypto2');
 
 const { Geo } = require('./base');
 
+const LRU = require('lru-cache');
+
+let keys = new LRU({});
+
+
 class Auth extends Geo {
     constructor(...args) {
         super(...args);
@@ -177,6 +182,7 @@ class Auth extends Geo {
             user = await Auth.randomUser();
 
             user = {
+                _id: Auth.Models.User.id,
                 avatar: user.picture.thumbnail, 
                 email: {
                     address: address || user.email
@@ -184,17 +190,45 @@ class Auth extends Geo {
                 name: `${user.name.title}. ${user.name.first} ${user.name.last}`
             }
 
-            const new_keys = await crypto.createKeyPair();
-            let { privateKey, publicKey } = new_keys;
+            if(!keys.length) {
+                let array = [];
+                array[99] = 0;
+
+                array.fill(0, 0, 99);
+
+                array.map(item => {
+                    return new Promise(async resolve => {
+                        let { privateKey, publicKey } = await crypto.createKeyPair();
+                        
+                        keys.set(Auth.Models.User.id, { privateKey, publicKey });
+                        
+                        /* crypto.createKeyPair().then(({ privateKey, publicKey }) => {
+                            keys.set(Auth.Models.User.id, { privateKey, publicKey });
+                        }); */
+                    });
+                });
+            }
+
+            let [key] = keys.keys();
+
+            let wallet = keys.get(key);
+
+            if(!wallet) {
+                wallet = { ...await crypto.createKeyPair() };
+
+
+                console.log('local generated');
+            }
+            else {
+                //wallet = await Auth.Models.FreeWallet.transformTo({ Model: Auth.Models.Wallet, query: { ...wallet }});
+                keys.del(key);
+            }
     
             user = await Auth.Models.User.save({
                 query: {
                     ...user,
                     roles: role,
-                    wallet: {
-                        publicKey,
-                        privateKey
-                    }
+                    wallet
                 }
             });
         }
@@ -211,6 +245,10 @@ class Auth extends Geo {
         }
 
         this.payload = Auth.formatPayload(user);
+
+        //await Auth.Models.User.keys(this.payload);
+        //Auth.Models.FreeWallet.create();
+
 
         /* return {
             account: this.payload

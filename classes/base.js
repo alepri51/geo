@@ -12,18 +12,7 @@ class Geo extends SecuredAPI {
     $getToken(method_name, ...args) {
         let [params = {}] = args;
         
-        if(params.token)
-            return params.token;
-
-        if(!this.payload) {
-            this.payload = {
-                //role: 'none'
-            }
-        }
-
-        if(!params.token && !this.payload) {            
-            throw { code: 401, message: 'No access token.' };
-        }
+        return params.token;
     }
 
     $setToken(token) {
@@ -31,18 +20,24 @@ class Geo extends SecuredAPI {
     }
 
     async $verifyToken(token) {
-        let payload = await super.$verifyToken(token);
-        
-        if(payload.token_error)
-            throw { code: 403, ...payload.token_error };
+        if(token) {
+            let payload = await super.$verifyToken(token);
+            
+            if(payload.token_error)
+                throw { code: 403, ...payload.token_error };
 
-        return payload;
+            return payload;
+        }
+
+        return {};
     }
 
-    async $executeAction(method_name, target, reciever, ...args) {
-        let response = await super.$executeAction(method_name, target, reciever, ...args);
+    async $executeAction(...args) {
+        let response = await super.$executeAction(...args);
 
-        typeof(response) === 'object' && (response = { ...response, _sign_: `${this.payload.class}: ${this.payload.name}`});
+        //response = 'hello';
+        response = { content: response, addons: { payload: this.payload }};
+        //typeof(response) === 'object' && (response = { ...response, _sign_: `${this.payload.class}: ${this.payload.name}`});
         return response;
     }
 

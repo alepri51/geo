@@ -17,13 +17,14 @@ app.listen(process.env.PORT || 8000, function () {
     const axios = require('axios');
     (async() => {
 
-        for(let i = 1; i <= 100; i++) {
+        for(let i = 1; i <= 1000; i++) {
             /* axios.get(`http://localhost:8001/api/auth.signin?email=yvan.lefevre@example.com`)
             .then(response => response && console.info(i, response.data))
             .catch(err => console.error(i, err)); */
             
-            /* let response = await axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`).catch(err => console.error(i, err));
-            response && console.info(i, response.data); */
+            /* axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`).catch(err => console.error(i, err))
+                .then(response => response && console.info(i, response.data)); */
+            
             //await sleep(97);
         }
     })();

@@ -27,15 +27,12 @@ class Playground extends Geo {
         let admins = await Geo.Models.Account.find({
             query: {
                 roles: {
-                    $skip: true,
-                    service: { 
-                        $aggregate: 'count:$',
-                        _id: { '$ref = toInteger($val)': 1 }
-                    }
+                    
+                    service: true
                 },
                 'roles:1': {
                     service: { 
-                        name: process.env.SERVICE
+                        name: 'GEO1'
                     },
                     limit: true
                 }
@@ -71,6 +68,7 @@ class Playground extends Geo {
         }); */
 
         return admins;
+        return { admins, array: ['asdad'] };
     }
 
     async get(...args) {
