@@ -8,7 +8,23 @@ class Playground extends Geo {
         super(...args);
     }
 
-    async hello(...args) {
+    async stress(...args) {
+        const axios = require('axios');
+
+        for(let i = 1; i <= 1000000; i++) {
+            /* axios.get(`http://localhost:8001/api/auth.signin?email=yvan.lefevre@example.com`)
+            .then(response => response && console.info(i, response.data))
+            .catch(err => console.error(i, err)); */
+            
+            axios.get(`http://localhost:${process.env.PORT}/api/auth.signup`)
+                //.catch(err => console.error(i, err))
+                //.then(response => response && console.info(i, response.data));
+            
+            //await sleep(97);
+        }
+    }
+
+    async hello({ duration, rate }) {
         /* let admins = await Geo.Models.Service.find({
             query: {
                 name: process.env.SERVICE,
@@ -23,6 +39,21 @@ class Playground extends Geo {
                 }
             }
         }); */
+
+        let limit = await Geo.Models.AccessLimit.findOne({
+            query: {
+                name: 'Users limits',
+            }
+        });
+
+        limit.duration = duration;
+        limit.rate = rate;
+
+        limit = await Geo.Models.AccessLimit.save({
+            query: limit
+        });
+
+        
 
         let admins = await Geo.Models.Account.find({
             query: {

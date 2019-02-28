@@ -17,7 +17,7 @@ app.listen(process.env.PORT || 8000, function () {
     const axios = require('axios');
     (async() => {
 
-        for(let i = 1; i <= 1000; i++) {
+        for(let i = 1; i <= 10000; i++) {
             /* axios.get(`http://localhost:8001/api/auth.signin?email=yvan.lefevre@example.com`)
             .then(response => response && console.info(i, response.data))
             .catch(err => console.error(i, err)); */

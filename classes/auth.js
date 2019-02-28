@@ -7,6 +7,8 @@ const LRU = require('lru-cache');
 
 let keys = new LRU({});
 
+const Queue = require('better-queue');
+const cp = require('child_process');
 
 class Auth extends Geo {
     constructor(...args) {
@@ -190,23 +192,29 @@ class Auth extends Geo {
                 name: `${user.name.title}. ${user.name.first} ${user.name.last}`
             }
 
-            if(!keys.length) {
-                let array = [];
-                array[99] = 0;
+            const mainQueue = new Queue(async ({ id }, cb) => {
 
-                array.fill(0, 0, 99);
+                let path = require.resolve('./rsagen.js');
 
-                array.map(item => {
-                    return new Promise(async resolve => {
-                        let { privateKey, publicKey } = await crypto.createKeyPair();
-                        
-                        keys.set(Auth.Models.User.id, { privateKey, publicKey });
-                        
-                        /* crypto.createKeyPair().then(({ privateKey, publicKey }) => {
-                            keys.set(Auth.Models.User.id, { privateKey, publicKey });
-                        }); */
-                    });
+                const worker = cp.fork(path, {execArgv: ['--harmony']});
+
+                worker.on('message', ({ privateKey, publicKey }) => {
+                    
+                    keys.set(id, { privateKey, publicKey });
                 });
+
+                worker.send({ hello: 'world' });
+
+                cb();
+            }, {
+                concurrent: 10,
+                maxRetries: 1,
+                retryDelay: 1000,
+                maxTimeout: 60000
+            });
+
+            for(let i = 1; i <= 9 - keys.length; i++) {
+                mainQueue.push({ id: Auth.Models.User.id });
             }
 
             let [key] = keys.keys();
@@ -214,13 +222,14 @@ class Auth extends Geo {
             let wallet = keys.get(key);
 
             if(!wallet) {
-                wallet = { ...await crypto.createKeyPair() };
-
+                wallet = { ...await crypto.createKeyPair(), _id: Auth.Models.User.id };
 
                 console.log('local generated');
             }
             else {
                 //wallet = await Auth.Models.FreeWallet.transformTo({ Model: Auth.Models.Wallet, query: { ...wallet }});
+                //console.log('generated in fork');
+
                 keys.del(key);
             }
     
