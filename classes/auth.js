@@ -21,7 +21,7 @@ class Auth extends Geo {
         
         let avatar = this.payload.avatar || 'default_user.png';
 
-        if(this.payload.class === 'Shadow') {
+        if(this.payload.class === 'User') { //Shadow
             return {
                 $redirect: true,
                 url: avatar
