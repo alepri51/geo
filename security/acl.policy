@@ -22,7 +22,7 @@ allow, *, *, =isService, $data.service, *
 
 allow, Users, playground, *, *, *
 allow, *, UI, *, *, *
-deny, *, UI, denied, *, *, { code: 403, message: 'access denied', redirect: '/' }
+deny, *, UI, denied, *, *, { code: 403, message: 'access denied', redirect: '/opo' }
 
 //allow, *, *, signout, { email: '$data.email' }, *
 
