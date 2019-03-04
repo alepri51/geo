@@ -21,6 +21,7 @@ deny, *, *, =isService, *, *, { code: 405, message: 'Not same service. You shoul
 allow, *, *, =isService, $data.service, *
 
 allow, Users, playground, *, *, *
+allow, *, UI, *, *, *
 
 //allow, *, *, signout, { email: '$data.email' }, *
 
