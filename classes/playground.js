@@ -49,9 +49,9 @@ class Playground extends Geo {
         limit.duration = duration;
         limit.rate = rate;
 
-        /* limit = await Geo.Models.AccessLimit.save({
+        limit = await Geo.Models.AccessLimit.save({
             query: limit
-        }); */
+        });
 
         
 

@@ -12,6 +12,14 @@ class UI extends Geo {
         return this.payload;
     }
 
+    async denied() {
+        return this.payload;
+    }
+
+    async error() {
+        throw { code: 500, message: 'CUSTOM ERROR' };
+    }
+
     async hello({ duration, rate }) {
         /* let admins = await Geo.Models.Service.find({
             query: {
