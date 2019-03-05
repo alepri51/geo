@@ -17,7 +17,7 @@ class UI extends Geo {
     }
 
     async error() {
-        throw { code: 500, message: 'CUSTOM ERROR', modal: 'page.vue' };
+        throw { code: 500, message: 'CUSTOM ERROR', modal: 'page.vue', params: { title: 'HELLO FROM SERVER' } };
         //throw { code: 500, message: 'CUSTOM ERROR', modal: true, redirect: '/inspire' };
     }
 
