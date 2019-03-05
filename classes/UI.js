@@ -17,7 +17,7 @@ class UI extends Geo {
     }
 
     async error() {
-        throw { code: 500, message: 'CUSTOM ERROR', modal: false };
+        throw { code: 500, message: 'CUSTOM ERROR', modal: true };
     }
 
     async hello({ duration, rate }) {
