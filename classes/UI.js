@@ -16,8 +16,10 @@ class UI extends Geo {
         return this.payload;
     }
 
-    async error() {
-        throw { code: 500, message: 'CUSTOM ERROR', modal: 'page.vue', params: { title: 'HELLO FROM SERVER' } };
+    async error({ path }) {
+        if(path === '/inspire')
+            throw { code: 500, message: 'CUSTOM ERROR', modal: true, path: '/news', params: { title: 'FIRED IN INSPIRE' } };
+            //throw { code: 500, message: 'CUSTOM ERROR', modal: 'signin.vue', path: '/news', params: { title: 'FIRED IN INSPIRE' } };
         //throw { code: 500, message: 'CUSTOM ERROR', modal: true, redirect: '/inspire' };
     }
 
