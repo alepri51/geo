@@ -18,7 +18,7 @@ class UI extends Geo {
 
     async error({ path }) {
         if(path === '/inspire')
-            throw { code: 500, message: 'CUSTOM ERROR', modal: true, path: '/news', params: { title: 'FIRED IN INSPIRE' } };
+            throw { code: 500, message: 'CUSTOM ERROR', modal: false, component: 'signin.vue', path: '/news', params: { title: 'FIRED IN INSPIRE' } };
             /////////////// MAKE IT WORK ///////////
             //throw { code: 500, message: 'CUSTOM ERROR', modal: true, component: 'page.vue', path: '/news', params: { title: 'FIRED IN INSPIRE' } };
             ////////////////////////////////////////
